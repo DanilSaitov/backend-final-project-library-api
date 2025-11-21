@@ -5,11 +5,140 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  passwordHash String
+  fullName     String
+  role         Role          @default(USER)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  
+  // Relationships
+  reservations Reservation[]
+  loans        Loan[]
+  
+  @@map("users")
+}
+
+model Book {
+  id              Int            @id @default(autoincrement())
+  isbn13          String         @unique
+  title           String
+  publicationYear Int
+  pageCount       Int
+  status          BookStatus     @default(AVAILABLE)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  // Foreign keys
+  authorId        Int
+  genreId         Int
+  
+  // Relationships
+  author        Author        @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  genre         Genre         @relation(fields: [genreId], references: [id], onDelete: Restrict)
+  reservations  Reservation[]
+  loans         Loan[]
+  
+  @@map("books")
+}
+
+model Author {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationships
+  books Book[]
+  
+  @@map("authors")
+}
+
+model Genre {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relationships
+  books Book[]
+  
+  @@map("genres")
+}
+
+model Reservation {
+  id          Int               @id @default(autoincrement())
+  status      ReservationStatus @default(ACTIVE)
+  createdAt   DateTime          @default(now())
+  expiresAt   DateTime?
+  fulfilledAt DateTime?
+  cancelledAt DateTime?
+  
+  // Foreign keys
+  userId Int
+  bookId Int
+  
+  // Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@map("reservations")
+}
+
+model Loan {
+  id         Int        @id @default(autoincrement())
+  startDate  DateTime
+  dueDate    DateTime
+  returnDate DateTime?
+  status     LoanStatus @default(ACTIVE)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  
+  // Foreign keys
+  userId Int
+  bookId Int
+  
+  // Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@map("loans")
+}
+
+enum Role {
+  USER
+  LIBRARIAN
+  ADMIN
+}
+
+enum BookStatus {
+  AVAILABLE
+  RESERVED
+  LOANED
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  FULFILLED
+}
+
+enum LoanStatus {
+  ACTIVE
+  OVERDUE
+  CLOSED
 }

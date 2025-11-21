@@ -81,7 +81,7 @@ model Reservation {
   id          Int               @id @default(autoincrement())
   status      ReservationStatus @default(ACTIVE)
   createdAt   DateTime          @default(now())
-  expiresAt   DateTime
+  expiresAt   DateTime?
   fulfilledAt DateTime?
   cancelledAt DateTime?
   
@@ -94,7 +94,6 @@ model Reservation {
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
   
   // Constraints
-  @@unique([bookId, status], map: "unique_active_reservation_per_book")
   @@map("reservations")
 }
 
@@ -116,7 +115,6 @@ model Loan {
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
   
   // Constraints
-  @@unique([bookId, status], map: "unique_active_loan_per_book")
   @@map("loans")
 }
 

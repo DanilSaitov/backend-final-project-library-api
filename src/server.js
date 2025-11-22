@@ -2,20 +2,20 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 
-import authRoutes from './routes/authRoutes.js';
-import userRoutes from './routes/userRoutes.js';
-import bookRoutes from './routes/bookRoutes.js';
-import authorRoutes from './routes/authorRoutes.js';
-import genreRoutes from './routes/genreRoutes.js';
-import reservationRoutes from './routes/reservationRoutes.js';
-import loanRoutes from './routes/loanRoutes.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { authRoutes } from './routes/authRoutes.js';
+import { userRoutes } from './routes/userRoutes.js';
+import { bookRoutes } from './routes/bookRoutes.js';
+import { authorRoutes } from './routes/authorRoutes.js';
+import { genreRoutes } from './routes/genreRoutes.js';
+import { reservationRoutes } from './routes/reservationRoutes.js';
+import { loanRoutes } from './routes/loanRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 app.use(cors());
-
 app.use(morgan('tiny'));
-
 app.use(express.json());
 
 app.use('/auth', authRoutes);
@@ -32,14 +32,8 @@ app.use((req, res, next) => {
   next(err);
 });
 
-app.use((err, req, res, next) => {
-  console.log(err.stack);
-  if (!err.status) {
-    console.log(err.stack);
-    err.status = 500;
-    err.message = 'Internal Server Error';
-  }
-  res.status(err.status).json({ error: err.message });
-});
+app.use(errorHandler);
 
-app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

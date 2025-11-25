@@ -1,0 +1,101 @@
+get:
+  summary: List reservations
+  description: List reservations for the authenticated user, or all reservations for Librarian/Admin
+  tags:
+    - Reservations
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: status
+      in: query
+      required: false
+      description: Filter reservations by status
+      schema:
+        type: string
+        enum: [ACTIVE, CANCELLED, EXPIRED, FULFILLED]
+        example: ACTIVE
+    - name: userId
+      in: query
+      required: false
+      description: Filter reservations by user ID (Librarian/Admin only)
+      schema:
+        type: integer
+        example: 1
+    - name: bookId
+      in: query
+      required: false
+      description: Filter reservations by book ID
+      schema:
+        type: integer
+        example: 1
+    - name: limit
+      in: query
+      required: false
+      description: Maximum number of reservations to return
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        example: 20
+    - name: offset
+      in: query
+      required: false
+      description: Number of reservations to skip
+      schema:
+        type: integer
+        minimum: 0
+        example: 0
+  responses:
+    '200':
+      description: Reservations retrieved successfully
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: ../components/schemas/Reservation.yaml
+    '400':
+      $ref: ../components/responses/BadRequest.yaml
+    '401':
+      $ref: ../components/responses/Unauthorized.yaml
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml
+
+post:
+  summary: Create a new reservation
+  description: Create a reservation for a book
+  tags:
+    - Reservations
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../components/schemas/ReservationCreate.yaml
+  responses:
+    '201':
+      description: Reservation created successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Reservation.yaml
+    '400':
+      $ref: ../components/responses/BadRequest.yaml
+    '401':
+      $ref: ../components/responses/Unauthorized.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '409':
+      description: Book is not available for reservation
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Book is not available for reservation
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml

@@ -1,0 +1,42 @@
+type: object
+properties:
+  id:
+    readOnly: true
+    type: integer
+    example: 1
+  status:
+    type: string
+    enum: [ACTIVE, CANCELLED, EXPIRED, FULFILLED]
+    example: ACTIVE
+  userId:
+    type: integer
+    example: 1
+  bookId:
+    type: integer
+    example: 1
+  user:
+    $ref: ./User.yaml
+  book:
+    $ref: ./Book.yaml
+  createdAt:
+    readOnly: true
+    type: string
+    format: date-time
+    example: 2025-01-15T10:30:00Z
+  expiresAt:
+    type: string
+    format: date-time
+    nullable: true
+    example: 2025-01-22T10:30:00Z
+  fulfilledAt:
+    readOnly: true
+    type: string
+    format: date-time
+    nullable: true
+    example: null
+  cancelledAt:
+    readOnly: true
+    type: string
+    format: date-time
+    nullable: true
+    example: null

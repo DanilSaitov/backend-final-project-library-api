@@ -1,0 +1,71 @@
+get:
+  summary: Get reservation by ID
+  description: Retrieve a specific reservation by its ID
+  tags:
+    - Reservations
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Reservation ID
+      schema:
+        type: integer
+        example: 1
+  responses:
+    '200':
+      description: Reservation retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Reservation.yaml
+    '401':
+      $ref: ../components/responses/Unauthorized.yaml
+    '403':
+      $ref: ../components/responses/Forbidden.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml
+
+delete:
+  summary: Cancel reservation
+  description: Cancel an active reservation
+  tags:
+    - Reservations
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Reservation ID
+      schema:
+        type: integer
+        example: 1
+  responses:
+    '200':
+      description: Reservation cancelled successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Reservation.yaml
+    '401':
+      $ref: ../components/responses/Unauthorized.yaml
+    '403':
+      $ref: ../components/responses/Forbidden.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '409':
+      description: Reservation cannot be cancelled
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Reservation cannot be cancelled (already fulfilled or expired)
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml

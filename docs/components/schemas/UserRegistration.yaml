@@ -1,0 +1,17 @@
+type: object
+properties:
+  email:
+    type: string
+    format: email
+    example: john@example.com
+  password:
+    type: string
+    minLength: 6
+    example: password123
+  fullName:
+    type: string
+    example: John Doe
+required:
+  - email
+  - password
+  - fullName

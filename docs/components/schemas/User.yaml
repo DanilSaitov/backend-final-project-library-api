@@ -1,0 +1,30 @@
+type: object
+properties:
+  id:
+    readOnly: true
+    type: integer
+    example: 1
+  email:
+    type: string
+    format: email
+    example: john@example.com
+  fullName:
+    type: string
+    example: John Doe
+  role:
+    type: string
+    enum: [USER, LIBRARIAN, ADMIN]
+    example: USER
+  createdAt:
+    readOnly: true
+    type: string
+    format: date-time
+    example: 2025-01-15T10:30:00Z
+  updatedAt:
+    readOnly: true
+    type: string
+    format: date-time
+    example: 2025-01-15T10:30:00Z
+required:
+  - email
+  - fullName

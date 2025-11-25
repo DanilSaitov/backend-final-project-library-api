@@ -1,0 +1,31 @@
+type: object
+properties:
+  isbn13:
+    type: string
+    pattern: '^[0-9]{13}$'
+    example: '9780439358071'
+  title:
+    type: string
+    example: Harry Potter and the Order of the Phoenix
+  publicationYear:
+    type: integer
+    minimum: 1000
+    maximum: 3000
+    example: 2003
+  pageCount:
+    type: integer
+    minimum: 1
+    example: 870
+  authorId:
+    type: integer
+    example: 1
+  genreId:
+    type: integer
+    example: 1
+required:
+  - isbn13
+  - title
+  - publicationYear
+  - pageCount
+  - authorId
+  - genreId

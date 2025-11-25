@@ -1,0 +1,16 @@
+type: object
+properties:
+  userId:
+    type: integer
+    example: 1
+  bookId:
+    type: integer
+    example: 1
+  dueDate:
+    type: string
+    format: date-time
+    example: 2025-02-15T10:30:00Z
+required:
+  - userId
+  - bookId
+  - dueDate

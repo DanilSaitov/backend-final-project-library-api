@@ -1,0 +1,40 @@
+post:
+  summary: Return book
+  description: Mark a loan as returned (Librarian/Admin only)
+  tags:
+    - Loans
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Loan ID
+      schema:
+        type: integer
+        example: 1
+  responses:
+    '200':
+      description: Book returned successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Loan.yaml
+    '401':
+      $ref: ../components/responses/Unauthorized.yaml
+    '403':
+      $ref: ../components/responses/Forbidden.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '409':
+      description: Loan cannot be returned
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Loan is already closed
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml

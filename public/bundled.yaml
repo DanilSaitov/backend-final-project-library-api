@@ -1,0 +1,1731 @@
+openapi: 3.1.0
+info:
+  title: Library Management API
+  description: A comprehensive library management system API for managing books, authors, genres, users, reservations, and loans
+  version: 1.0.0
+  contact:
+    name: Library Management System
+    email: admin@library.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://library-api.production.com
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Authentication
+    description: User authentication and registration
+  - name: Users
+    description: User management endpoints
+  - name: Books
+    description: Book catalog management
+  - name: Authors
+    description: Author management
+  - name: Genres
+    description: Genre management
+  - name: Reservations
+    description: Book reservation management
+  - name: Loans
+    description: Book loan management
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      description: Create a new user account
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+      responses:
+        '201':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/login:
+    post:
+      summary: Login user
+      description: Authenticate user and return JWT token
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/me:
+    get:
+      summary: Get current user profile
+      description: Retrieve the profile information of the authenticated user
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      summary: Update current user profile
+      description: Update the profile information of the authenticated user
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullName:
+                  type: string
+                  example: John Doe Updated
+                email:
+                  type: string
+                  format: email
+                  example: john.updated@example.com
+      responses:
+        '200':
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users:
+    get:
+      summary: List all users
+      description: Retrieve list of all users (Librarian/Admin only)
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: role
+          in: query
+          required: false
+          description: Filter users by role
+          schema:
+            type: string
+            enum: [USER, LIBRARIAN, ADMIN]
+            example: USER
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of users to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            example: 20
+        - name: offset
+          in: query
+          required: false
+          description: Number of users to skip
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/{id}/role:
+    patch:
+      summary: Update user role
+      description: Update the role of a specific user (Admin only)
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum: [USER, LIBRARIAN, ADMIN]
+                  example: LIBRARIAN
+              required:
+                - role
+      responses:
+        '200':
+          description: User role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /books:
+    get:
+      summary: List all books
+      description: Retrieve list of all books with filtering options
+      tags:
+        - Books
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Filter books by availability status
+          schema:
+            type: string
+            enum: [AVAILABLE, RESERVED, LOANED]
+            example: AVAILABLE
+        - name: authorId
+          in: query
+          required: false
+          description: Filter books by author ID
+          schema:
+            type: integer
+            example: 1
+        - name: genreId
+          in: query
+          required: false
+          description: Filter books by genre ID
+          schema:
+            type: integer
+            example: 1
+        - name: title
+          in: query
+          required: false
+          description: Search books by title (partial match)
+          schema:
+            type: string
+            example: Harry Potter
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of books to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            example: 20
+        - name: offset
+          in: query
+          required: false
+          description: Number of books to skip
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+      responses:
+        '200':
+          description: Books retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Create a new book
+      description: Add a new book to the library catalog (Librarian/Admin only)
+      tags:
+        - Books
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookCreate'
+      responses:
+        '201':
+          description: Book created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /books/{id}:
+    get:
+      summary: Get book by ID
+      description: Retrieve a specific book by its ID
+      tags:
+        - Books
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Book ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Book retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      summary: Update book
+      description: Update an existing book (Librarian/Admin only)
+      tags:
+        - Books
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Book ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Harry Potter and the Order of the Phoenix (Updated)
+                publicationYear:
+                  type: integer
+                  minimum: 1000
+                  maximum: 3000
+                  example: 2003
+                pageCount:
+                  type: integer
+                  minimum: 1
+                  example: 870
+                authorId:
+                  type: integer
+                  example: 1
+                genreId:
+                  type: integer
+                  example: 1
+                status:
+                  type: string
+                  enum: [AVAILABLE, RESERVED, LOANED]
+                  example: AVAILABLE
+      responses:
+        '200':
+          description: Book updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      summary: Delete book
+      description: Remove a book from the library catalog (Librarian/Admin only)
+      tags:
+        - Books
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Book ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Book deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Cannot delete book with active loans or reservations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Cannot delete book with active loans or reservations
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /authors:
+    get:
+      summary: List all authors
+      description: Retrieve list of all authors
+      tags:
+        - Authors
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: Search authors by name (partial match)
+          schema:
+            type: string
+            example: Rowling
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of authors to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            example: 20
+        - name: offset
+          in: query
+          required: false
+          description: Number of authors to skip
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+      responses:
+        '200':
+          description: Authors retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Author'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Create a new author
+      description: Add a new author (Librarian/Admin only)
+      tags:
+        - Authors
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: J.R.R. Tolkien
+              required:
+                - name
+      responses:
+        '201':
+          description: Author created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Author'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /authors/{id}:
+    get:
+      summary: Get author by ID
+      description: Retrieve a specific author by their ID
+      tags:
+        - Authors
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Author ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Author retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Author'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      summary: Update author
+      description: Update an existing author (Librarian/Admin only)
+      tags:
+        - Authors
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Author ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: J.R.R. Tolkien (Updated)
+              required:
+                - name
+      responses:
+        '200':
+          description: Author updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Author'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      summary: Delete author
+      description: Remove an author (Librarian/Admin only)
+      tags:
+        - Authors
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Author ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Author deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Cannot delete author with associated books
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Cannot delete author with associated books
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /genres:
+    get:
+      summary: List all genres
+      description: Retrieve list of all genres
+      tags:
+        - Genres
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: Search genres by name (partial match)
+          schema:
+            type: string
+            example: Fantasy
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of genres to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            example: 20
+        - name: offset
+          in: query
+          required: false
+          description: Number of genres to skip
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+      responses:
+        '200':
+          description: Genres retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Genre'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Create a new genre
+      description: Add a new genre (Librarian/Admin only)
+      tags:
+        - Genres
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Science Fiction
+              required:
+                - name
+      responses:
+        '201':
+          description: Genre created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /genres/{id}:
+    get:
+      summary: Get genre by ID
+      description: Retrieve a specific genre by its ID
+      tags:
+        - Genres
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Genre ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Genre retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      summary: Update genre
+      description: Update an existing genre (Librarian/Admin only)
+      tags:
+        - Genres
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Genre ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Science Fiction (Updated)
+              required:
+                - name
+      responses:
+        '200':
+          description: Genre updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      summary: Delete genre
+      description: Remove a genre (Librarian/Admin only)
+      tags:
+        - Genres
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Genre ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Genre deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Cannot delete genre with associated books
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Cannot delete genre with associated books
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /reservations:
+    get:
+      summary: List reservations
+      description: List reservations for the authenticated user, or all reservations for Librarian/Admin
+      tags:
+        - Reservations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Filter reservations by status
+          schema:
+            type: string
+            enum: [ACTIVE, CANCELLED, EXPIRED, FULFILLED]
+            example: ACTIVE
+        - name: userId
+          in: query
+          required: false
+          description: Filter reservations by user ID (Librarian/Admin only)
+          schema:
+            type: integer
+            example: 1
+        - name: bookId
+          in: query
+          required: false
+          description: Filter reservations by book ID
+          schema:
+            type: integer
+            example: 1
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of reservations to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            example: 20
+        - name: offset
+          in: query
+          required: false
+          description: Number of reservations to skip
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+      responses:
+        '200':
+          description: Reservations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Create a new reservation
+      description: Create a reservation for a book
+      tags:
+        - Reservations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationCreate'
+      responses:
+        '201':
+          description: Reservation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Book is not available for reservation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Book is not available for reservation
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /reservations/{id}:
+    get:
+      summary: Get reservation by ID
+      description: Retrieve a specific reservation by its ID
+      tags:
+        - Reservations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Reservation ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Reservation retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      summary: Cancel reservation
+      description: Cancel an active reservation
+      tags:
+        - Reservations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Reservation ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Reservation cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Reservation cannot be cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Reservation cannot be cancelled (already fulfilled or expired)
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /reservations/{id}/fulfill:
+    post:
+      summary: Fulfill reservation
+      description: Convert a reservation into a loan (Librarian/Admin only)
+      tags:
+        - Reservations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Reservation ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dueDate:
+                  type: string
+                  format: date-time
+                  example: 2025-02-15T23:59:59Z
+              required:
+                - dueDate
+      responses:
+        '200':
+          description: Reservation fulfilled and loan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Reservation cannot be fulfilled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Reservation cannot be fulfilled (not active or expired)
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /loans:
+    get:
+      summary: List loans
+      description: List loans for the authenticated user, or all loans for Librarian/Admin
+      tags:
+        - Loans
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Filter loans by status
+          schema:
+            type: string
+            enum: [ACTIVE, OVERDUE, CLOSED]
+            example: ACTIVE
+        - name: userId
+          in: query
+          required: false
+          description: Filter loans by user ID (Librarian/Admin only)
+          schema:
+            type: integer
+            example: 1
+        - name: bookId
+          in: query
+          required: false
+          description: Filter loans by book ID
+          schema:
+            type: integer
+            example: 1
+        - name: overdue
+          in: query
+          required: false
+          description: Filter for overdue loans only
+          schema:
+            type: boolean
+            example: true
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of loans to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            example: 20
+        - name: offset
+          in: query
+          required: false
+          description: Number of loans to skip
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+      responses:
+        '200':
+          description: Loans retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Create a new loan
+      description: Create a direct loan without reservation (Librarian/Admin only)
+      tags:
+        - Loans
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanCreate'
+      responses:
+        '201':
+          description: Loan created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Book is not available for loan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Book is not available for loan
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /loans/{id}:
+    get:
+      summary: Get loan by ID
+      description: Retrieve a specific loan by its ID
+      tags:
+        - Loans
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Loan ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Loan retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      summary: Update loan
+      description: Update loan details like due date (Librarian/Admin only)
+      tags:
+        - Loans
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Loan ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dueDate:
+                  type: string
+                  format: date-time
+                  example: 2025-03-15T23:59:59Z
+      responses:
+        '200':
+          description: Loan updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Loan cannot be updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Loan is already closed and cannot be updated
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /loans/{id}/return:
+    post:
+      summary: Return book
+      description: Mark a loan as returned (Librarian/Admin only)
+      tags:
+        - Loans
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Loan ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Book returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Loan cannot be returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Loan is already closed
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /auth/login endpoint
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          readOnly: true
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        fullName:
+          type: string
+          example: John Doe
+        role:
+          type: string
+          enum: [USER, LIBRARIAN, ADMIN]
+          example: USER
+        createdAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: 2025-01-15T10:30:00Z
+        updatedAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: 2025-01-15T10:30:00Z
+      required:
+        - email
+        - fullName
+
+    UserRegistration:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        password:
+          type: string
+          minLength: 6
+          example: password123
+        fullName:
+          type: string
+          example: John Doe
+      required:
+        - email
+        - password
+        - fullName
+
+    UserLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        password:
+          type: string
+          example: password123
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          $ref: '#/components/schemas/User'
+
+    Author:
+      type: object
+      properties:
+        id:
+          readOnly: true
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: J.K. Rowling
+        createdAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: 2025-01-15T10:30:00Z
+        updatedAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: 2025-01-15T10:30:00Z
+      required:
+        - name
+
+    Genre:
+      type: object
+      properties:
+        id:
+          readOnly: true
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Fantasy
+        createdAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: 2025-01-15T10:30:00Z
+        updatedAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: 2025-01-15T10:30:00Z
+      required:
+        - name
+
+    Book:
+      type: object
+      properties:
+        id:
+          readOnly: true
+          type: integer
+          example: 1
+        isbn13:
+          type: string
+          pattern: '^[0-9]{13}$'
+          example: '9780439358071'
+        title:
+          type: string
+          example: Harry Potter and the Order of the Phoenix
+        publicationYear:
+          type: integer
+          minimum: 1000
+          maximum: 3000
+          example: 2003
+        pageCount:
+          type: integer
+          minimum: 1
+          example: 870
+        status:
+          type: string
+          enum: [AVAILABLE, RESERVED, LOANED]
+          example: AVAILABLE
+        authorId:
+          type: integer
+          example: 1
+        genreId:
+          type: integer
+          example: 1
+        author:
+          $ref: '#/components/schemas/Author'
+        genre:
+          $ref: '#/components/schemas/Genre'
+        createdAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: 2025-01-15T10:30:00Z
+        updatedAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: 2025-01-15T10:30:00Z
+      required:
+        - isbn13
+        - title
+        - publicationYear
+        - pageCount
+        - authorId
+        - genreId
+
+    BookCreate:
+      type: object
+      properties:
+        isbn13:
+          type: string
+          pattern: '^[0-9]{13}$'
+          example: '9780439358071'
+        title:
+          type: string
+          example: Harry Potter and the Order of the Phoenix
+        publicationYear:
+          type: integer
+          minimum: 1000
+          maximum: 3000
+          example: 2003
+        pageCount:
+          type: integer
+          minimum: 1
+          example: 870
+        authorId:
+          type: integer
+          example: 1
+        genreId:
+          type: integer
+          example: 1
+      required:
+        - isbn13
+        - title
+        - publicationYear
+        - pageCount
+        - authorId
+        - genreId
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          readOnly: true
+          type: integer
+          example: 1
+        status:
+          type: string
+          enum: [ACTIVE, CANCELLED, EXPIRED, FULFILLED]
+          example: ACTIVE
+        userId:
+          type: integer
+          example: 1
+        bookId:
+          type: integer
+          example: 1
+        user:
+          $ref: '#/components/schemas/User'
+        book:
+          $ref: '#/components/schemas/Book'
+        createdAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: 2025-01-15T10:30:00Z
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: 2025-01-22T10:30:00Z
+        fulfilledAt:
+          readOnly: true
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        cancelledAt:
+          readOnly: true
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+
+    ReservationCreate:
+      type: object
+      properties:
+        bookId:
+          type: integer
+          example: 1
+      required:
+        - bookId
+
+    Loan:
+      type: object
+      properties:
+        id:
+          readOnly: true
+          type: integer
+          example: 1
+        startDate:
+          type: string
+          format: date-time
+          example: 2025-01-15T10:30:00Z
+        dueDate:
+          type: string
+          format: date-time
+          example: 2025-02-15T10:30:00Z
+        returnDate:
+          readOnly: true
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        status:
+          type: string
+          enum: [ACTIVE, OVERDUE, CLOSED]
+          example: ACTIVE
+        userId:
+          type: integer
+          example: 1
+        bookId:
+          type: integer
+          example: 1
+        user:
+          $ref: '#/components/schemas/User'
+        book:
+          $ref: '#/components/schemas/Book'
+        createdAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: 2025-01-15T10:30:00Z
+        updatedAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: 2025-01-15T10:30:00Z
+
+    LoanCreate:
+      type: object
+      properties:
+        userId:
+          type: integer
+          example: 1
+        bookId:
+          type: integer
+          example: 1
+        dueDate:
+          type: string
+          format: date-time
+          example: 2025-02-15T10:30:00Z
+      required:
+        - userId
+        - bookId
+        - dueDate
+
+  responses:
+    BadRequest:
+      description: Bad Request - Invalid input data
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Validation failed
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    field:
+                      type: string
+                      example: email
+                    message:
+                      type: string
+                      example: Invalid email format
+
+    Unauthorized:
+      description: Unauthorized - Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Authentication required
+
+    Forbidden:
+      description: Forbidden - Insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Insufficient permissions
+
+    NotFound:
+      description: Not Found - Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Resource not found
+
+    Conflict:
+      description: Conflict - Resource already exists or constraint violation
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Resource already exists
+
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Internal server error

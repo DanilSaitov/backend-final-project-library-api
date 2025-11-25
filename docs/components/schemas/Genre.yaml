@@ -1,0 +1,21 @@
+type: object
+properties:
+  id:
+    readOnly: true
+    type: integer
+    example: 1
+  name:
+    type: string
+    example: Fantasy
+  createdAt:
+    readOnly: true
+    type: string
+    format: date-time
+    example: 2025-01-15T10:30:00Z
+  updatedAt:
+    readOnly: true
+    type: string
+    format: date-time
+    example: 2025-01-15T10:30:00Z
+required:
+  - name

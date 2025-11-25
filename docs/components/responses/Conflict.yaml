@@ -1,0 +1,9 @@
+description: Conflict - Resource already exists or constraint violation
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Resource already exists

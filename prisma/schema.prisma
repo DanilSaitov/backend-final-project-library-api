@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -22,34 +16,28 @@ model User {
   role         Role          @default(USER)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  
-  // Relationships
-  reservations Reservation[]
   loans        Loan[]
-  
+  reservations Reservation[]
+
   @@map("users")
 }
 
 model Book {
-  id              Int            @id @default(autoincrement())
-  isbn13          String         @unique
+  id              Int           @id @default(autoincrement())
+  isbn13          String        @unique
   title           String
   publicationYear Int
   pageCount       Int
-  status          BookStatus     @default(AVAILABLE)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  
-  // Foreign keys
+  status          BookStatus    @default(AVAILABLE)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
   authorId        Int
   genreId         Int
-  
-  // Relationships
-  author        Author        @relation(fields: [authorId], references: [id], onDelete: Restrict)
-  genre         Genre         @relation(fields: [genreId], references: [id], onDelete: Restrict)
-  reservations  Reservation[]
-  loans         Loan[]
-  
+  author          Author        @relation(fields: [authorId], references: [id])
+  genre           Genre         @relation(fields: [genreId], references: [id])
+  loans           Loan[]
+  reservations    Reservation[]
+
   @@map("books")
 }
 
@@ -58,10 +46,8 @@ model Author {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  // Relationships
-  books Book[]
-  
+  books     Book[]
+
   @@map("authors")
 }
 
@@ -70,10 +56,8 @@ model Genre {
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  // Relationships
-  books Book[]
-  
+  books     Book[]
+
   @@map("genres")
 }
 
@@ -84,16 +68,11 @@ model Reservation {
   expiresAt   DateTime?
   fulfilledAt DateTime?
   cancelledAt DateTime?
-  
-  // Foreign keys
-  userId Int
-  bookId Int
-  
-  // Relationships
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  
-  // Constraints
+  userId      Int
+  bookId      Int
+  book        Book              @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("reservations")
 }
 
@@ -105,16 +84,11 @@ model Loan {
   status     LoanStatus @default(ACTIVE)
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
-  
-  // Foreign keys
-  userId Int
-  bookId Int
-  
-  // Relationships
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  
-  // Constraints
+  userId     Int
+  bookId     Int
+  book       Book       @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("loans")
 }
 

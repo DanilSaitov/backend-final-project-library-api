@@ -1,0 +1,106 @@
+get:
+  summary: Get author by ID
+  description: Retrieve a specific author by their ID
+  tags:
+    - Authors
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Author ID
+      schema:
+        type: integer
+        example: 1
+  responses:
+    '200':
+      description: Author retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Author.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml
+
+patch:
+  summary: Update author
+  description: Update an existing author (Librarian/Admin only)
+  tags:
+    - Authors
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Author ID
+      schema:
+        type: integer
+        example: 1
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              example: J.R.R. Tolkien (Updated)
+          required:
+            - name
+  responses:
+    '200':
+      description: Author updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Author.yaml
+    '400':
+      $ref: ../components/responses/BadRequest.yaml
+    '401':
+      $ref: ../components/responses/Unauthorized.yaml
+    '403':
+      $ref: ../components/responses/Forbidden.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml
+
+delete:
+  summary: Delete author
+  description: Remove an author (Librarian/Admin only)
+  tags:
+    - Authors
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Author ID
+      schema:
+        type: integer
+        example: 1
+  responses:
+    '204':
+      description: Author deleted successfully
+    '401':
+      $ref: ../components/responses/Unauthorized.yaml
+    '403':
+      $ref: ../components/responses/Forbidden.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '409':
+      description: Cannot delete author with associated books
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Cannot delete author with associated books
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml

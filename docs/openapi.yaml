@@ -1,0 +1,138 @@
+openapi: 3.1.0
+info:
+  title: Library Management API
+  description: A comprehensive library management system API for managing books, authors, genres, users, reservations, and loans
+  version: 1.0.0
+  contact:
+    name: Library Management System
+    email: admin@library.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://library-api.production.com
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Authentication
+    description: User authentication and registration
+  - name: Users
+    description: User management endpoints
+  - name: Books
+    description: Book catalog management
+  - name: Authors
+    description: Author management
+  - name: Genres
+    description: Genre management
+  - name: Reservations
+    description: Book reservation management
+  - name: Loans
+    description: Book loan management
+
+paths:
+  # Authentication endpoints
+  /auth/register:
+    $ref: paths/auth_register.yaml
+  /auth/login:
+    $ref: paths/auth_login.yaml
+
+  # User endpoints
+  /users/me:
+    $ref: paths/users_me.yaml
+  /users:
+    $ref: paths/users.yaml
+  /users/{id}/role:
+    $ref: paths/users_{id}_role.yaml
+
+  # Book endpoints
+  /books:
+    $ref: paths/books.yaml
+  /books/{id}:
+    $ref: paths/books_{id}.yaml
+
+  # Author endpoints
+  /authors:
+    $ref: paths/authors.yaml
+  /authors/{id}:
+    $ref: paths/authors_{id}.yaml
+
+  # Genre endpoints
+  /genres:
+    $ref: paths/genres.yaml
+  /genres/{id}:
+    $ref: paths/genres_{id}.yaml
+
+  # Reservation endpoints
+  /reservations:
+    $ref: paths/reservations.yaml
+  /reservations/{id}:
+    $ref: paths/reservations_{id}.yaml
+  /reservations/{id}/fulfill:
+    $ref: paths/reservations_{id}_fulfill.yaml
+
+  # Loan endpoints
+  /loans:
+    $ref: paths/loans.yaml
+  /loans/{id}:
+    $ref: paths/loans_{id}.yaml
+  /loans/{id}/return:
+    $ref: paths/loans_{id}_return.yaml
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /auth/login endpoint
+
+  schemas:
+    User:
+      $ref: components/schemas/User.yaml
+    UserRegistration:
+      $ref: components/schemas/UserRegistration.yaml
+    UserLogin:
+      $ref: components/schemas/UserLogin.yaml
+    AuthResponse:
+      $ref: components/schemas/AuthResponse.yaml
+
+    Book:
+      $ref: components/schemas/Book.yaml
+    BookCreate:
+      $ref: components/schemas/BookCreate.yaml
+
+    Author:
+      $ref: components/schemas/Author.yaml
+
+    Genre:
+      $ref: components/schemas/Genre.yaml
+
+    Reservation:
+      $ref: components/schemas/Reservation.yaml
+    ReservationCreate:
+      $ref: components/schemas/ReservationCreate.yaml
+
+    Loan:
+      $ref: components/schemas/Loan.yaml
+    LoanCreate:
+      $ref: components/schemas/LoanCreate.yaml
+
+  responses:
+    BadRequest:
+      $ref: components/responses/BadRequest.yaml
+    Unauthorized:
+      $ref: components/responses/Unauthorized.yaml
+    Forbidden:
+      $ref: components/responses/Forbidden.yaml
+    NotFound:
+      $ref: components/responses/NotFound.yaml
+    Conflict:
+      $ref: components/responses/Conflict.yaml
+    InternalServerError:
+      $ref: components/responses/InternalServerError.yaml

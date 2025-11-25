@@ -1,0 +1,55 @@
+post:
+  summary: Fulfill reservation
+  description: Convert a reservation into a loan (Librarian/Admin only)
+  tags:
+    - Reservations
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Reservation ID
+      schema:
+        type: integer
+        example: 1
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            dueDate:
+              type: string
+              format: date-time
+              example: 2025-02-15T23:59:59Z
+          required:
+            - dueDate
+  responses:
+    '200':
+      description: Reservation fulfilled and loan created
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Loan.yaml
+    '400':
+      $ref: ../components/responses/BadRequest.yaml
+    '401':
+      $ref: ../components/responses/Unauthorized.yaml
+    '403':
+      $ref: ../components/responses/Forbidden.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '409':
+      description: Reservation cannot be fulfilled
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Reservation cannot be fulfilled (not active or expired)
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml

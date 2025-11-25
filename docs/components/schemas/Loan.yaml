@@ -1,0 +1,44 @@
+type: object
+properties:
+  id:
+    readOnly: true
+    type: integer
+    example: 1
+  startDate:
+    type: string
+    format: date-time
+    example: 2025-01-15T10:30:00Z
+  dueDate:
+    type: string
+    format: date-time
+    example: 2025-02-15T10:30:00Z
+  returnDate:
+    readOnly: true
+    type: string
+    format: date-time
+    nullable: true
+    example: null
+  status:
+    type: string
+    enum: [ACTIVE, OVERDUE, CLOSED]
+    example: ACTIVE
+  userId:
+    type: integer
+    example: 1
+  bookId:
+    type: integer
+    example: 1
+  user:
+    $ref: ./User.yaml
+  book:
+    $ref: ./Book.yaml
+  createdAt:
+    readOnly: true
+    type: string
+    format: date-time
+    example: 2025-01-15T10:30:00Z
+  updatedAt:
+    readOnly: true
+    type: string
+    format: date-time
+    example: 2025-01-15T10:30:00Z

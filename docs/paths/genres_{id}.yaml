@@ -1,0 +1,106 @@
+get:
+  summary: Get genre by ID
+  description: Retrieve a specific genre by its ID
+  tags:
+    - Genres
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Genre ID
+      schema:
+        type: integer
+        example: 1
+  responses:
+    '200':
+      description: Genre retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Genre.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml
+
+patch:
+  summary: Update genre
+  description: Update an existing genre (Librarian/Admin only)
+  tags:
+    - Genres
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Genre ID
+      schema:
+        type: integer
+        example: 1
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              example: Science Fiction (Updated)
+          required:
+            - name
+  responses:
+    '200':
+      description: Genre updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Genre.yaml
+    '400':
+      $ref: ../components/responses/BadRequest.yaml
+    '401':
+      $ref: ../components/responses/Unauthorized.yaml
+    '403':
+      $ref: ../components/responses/Forbidden.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml
+
+delete:
+  summary: Delete genre
+  description: Remove a genre (Librarian/Admin only)
+  tags:
+    - Genres
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Genre ID
+      schema:
+        type: integer
+        example: 1
+  responses:
+    '204':
+      description: Genre deleted successfully
+    '401':
+      $ref: ../components/responses/Unauthorized.yaml
+    '403':
+      $ref: ../components/responses/Forbidden.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '409':
+      description: Cannot delete genre with associated books
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Cannot delete genre with associated books
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml

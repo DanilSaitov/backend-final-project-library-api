@@ -1,0 +1,84 @@
+get:
+  summary: Get loan by ID
+  description: Retrieve a specific loan by its ID
+  tags:
+    - Loans
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Loan ID
+      schema:
+        type: integer
+        example: 1
+  responses:
+    '200':
+      description: Loan retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Loan.yaml
+    '401':
+      $ref: ../components/responses/Unauthorized.yaml
+    '403':
+      $ref: ../components/responses/Forbidden.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml
+
+patch:
+  summary: Update loan
+  description: Update loan details like due date (Librarian/Admin only)
+  tags:
+    - Loans
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Loan ID
+      schema:
+        type: integer
+        example: 1
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            dueDate:
+              type: string
+              format: date-time
+              example: 2025-03-15T23:59:59Z
+  responses:
+    '200':
+      description: Loan updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Loan.yaml
+    '400':
+      $ref: ../components/responses/BadRequest.yaml
+    '401':
+      $ref: ../components/responses/Unauthorized.yaml
+    '403':
+      $ref: ../components/responses/Forbidden.yaml
+    '404':
+      $ref: ../components/responses/NotFound.yaml
+    '409':
+      description: Loan cannot be updated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Loan is already closed and cannot be updated
+    '500':
+      $ref: ../components/responses/InternalServerError.yaml

@@ -1,0 +1,7 @@
+type: object
+properties:
+  bookId:
+    type: integer
+    example: 1
+required:
+  - bookId

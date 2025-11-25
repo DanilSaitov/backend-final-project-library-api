@@ -9,16 +9,13 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-
 servers:
   - url: http://localhost:3000
     description: Local development server
-  - url: https://library-api.production.com
-    description: Production server
-
+  - url: https://backend-final-project-library-api.onrender.com
+    description: Production server on render
 security:
   - bearerAuth: []
-
 tags:
   - name: Authentication
     description: User authentication and registration
@@ -34,7 +31,6 @@ tags:
     description: Book reservation management
   - name: Loans
     description: Book loan management
-
 paths:
   /auth/register:
     post:
@@ -61,7 +57,6 @@ paths:
           $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /auth/login:
     post:
       summary: Login user
@@ -87,7 +82,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /users/me:
     get:
       summary: Get current user profile
@@ -107,7 +101,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     patch:
       summary: Update current user profile
       description: Update the profile information of the authenticated user
@@ -144,7 +137,6 @@ paths:
           $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /users:
     get:
       summary: List all users
@@ -160,7 +152,10 @@ paths:
           description: Filter users by role
           schema:
             type: string
-            enum: [USER, LIBRARIAN, ADMIN]
+            enum:
+              - USER
+              - LIBRARIAN
+              - ADMIN
             example: USER
         - name: limit
           in: query
@@ -194,7 +189,6 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /users/{id}/role:
     patch:
       summary: Update user role
@@ -220,7 +214,10 @@ paths:
               properties:
                 role:
                   type: string
-                  enum: [USER, LIBRARIAN, ADMIN]
+                  enum:
+                    - USER
+                    - LIBRARIAN
+                    - ADMIN
                   example: LIBRARIAN
               required:
                 - role
@@ -241,7 +238,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /books:
     get:
       summary: List all books
@@ -255,7 +251,10 @@ paths:
           description: Filter books by availability status
           schema:
             type: string
-            enum: [AVAILABLE, RESERVED, LOANED]
+            enum:
+              - AVAILABLE
+              - RESERVED
+              - LOANED
             example: AVAILABLE
         - name: authorId
           in: query
@@ -308,7 +307,6 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     post:
       summary: Create a new book
       description: Add a new book to the library catalog (Librarian/Admin only)
@@ -339,7 +337,6 @@ paths:
           $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /books/{id}:
     get:
       summary: Get book by ID
@@ -365,7 +362,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     patch:
       summary: Update book
       description: Update an existing book (Librarian/Admin only)
@@ -408,7 +404,10 @@ paths:
                   example: 1
                 status:
                   type: string
-                  enum: [AVAILABLE, RESERVED, LOANED]
+                  enum:
+                    - AVAILABLE
+                    - RESERVED
+                    - LOANED
                   example: AVAILABLE
       responses:
         '200':
@@ -427,7 +426,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     delete:
       summary: Delete book
       description: Remove a book from the library catalog (Librarian/Admin only)
@@ -464,7 +462,6 @@ paths:
                     example: Cannot delete book with active loans or reservations
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /authors:
     get:
       summary: List all authors
@@ -509,7 +506,6 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     post:
       summary: Create a new author
       description: Add a new author (Librarian/Admin only)
@@ -546,7 +542,6 @@ paths:
           $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /authors/{id}:
     get:
       summary: Get author by ID
@@ -572,7 +567,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     patch:
       summary: Update author
       description: Update an existing author (Librarian/Admin only)
@@ -617,7 +611,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     delete:
       summary: Delete author
       description: Remove an author (Librarian/Admin only)
@@ -654,7 +647,6 @@ paths:
                     example: Cannot delete author with associated books
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /genres:
     get:
       summary: List all genres
@@ -699,7 +691,6 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     post:
       summary: Create a new genre
       description: Add a new genre (Librarian/Admin only)
@@ -736,7 +727,6 @@ paths:
           $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /genres/{id}:
     get:
       summary: Get genre by ID
@@ -762,7 +752,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     patch:
       summary: Update genre
       description: Update an existing genre (Librarian/Admin only)
@@ -807,7 +796,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     delete:
       summary: Delete genre
       description: Remove a genre (Librarian/Admin only)
@@ -844,7 +832,6 @@ paths:
                     example: Cannot delete genre with associated books
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /reservations:
     get:
       summary: List reservations
@@ -860,7 +847,11 @@ paths:
           description: Filter reservations by status
           schema:
             type: string
-            enum: [ACTIVE, CANCELLED, EXPIRED, FULFILLED]
+            enum:
+              - ACTIVE
+              - CANCELLED
+              - EXPIRED
+              - FULFILLED
             example: ACTIVE
         - name: userId
           in: query
@@ -908,7 +899,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     post:
       summary: Create a new reservation
       description: Create a reservation for a book
@@ -947,7 +937,6 @@ paths:
                     example: Book is not available for reservation
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /reservations/{id}:
     get:
       summary: Get reservation by ID
@@ -979,7 +968,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     delete:
       summary: Cancel reservation
       description: Cancel an active reservation
@@ -1020,7 +1008,6 @@ paths:
                     example: Reservation cannot be cancelled (already fulfilled or expired)
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /reservations/{id}/fulfill:
     post:
       summary: Fulfill reservation
@@ -1047,7 +1034,7 @@ paths:
                 dueDate:
                   type: string
                   format: date-time
-                  example: 2025-02-15T23:59:59Z
+                  example: '2025-02-15T23:59:59Z'
               required:
                 - dueDate
       responses:
@@ -1077,7 +1064,6 @@ paths:
                     example: Reservation cannot be fulfilled (not active or expired)
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /loans:
     get:
       summary: List loans
@@ -1093,7 +1079,10 @@ paths:
           description: Filter loans by status
           schema:
             type: string
-            enum: [ACTIVE, OVERDUE, CLOSED]
+            enum:
+              - ACTIVE
+              - OVERDUE
+              - CLOSED
             example: ACTIVE
         - name: userId
           in: query
@@ -1148,7 +1137,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     post:
       summary: Create a new loan
       description: Create a direct loan without reservation (Librarian/Admin only)
@@ -1189,7 +1177,6 @@ paths:
                     example: Book is not available for loan
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /loans/{id}:
     get:
       summary: Get loan by ID
@@ -1221,7 +1208,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     patch:
       summary: Update loan
       description: Update loan details like due date (Librarian/Admin only)
@@ -1247,7 +1233,7 @@ paths:
                 dueDate:
                   type: string
                   format: date-time
-                  example: 2025-03-15T23:59:59Z
+                  example: '2025-03-15T23:59:59Z'
       responses:
         '200':
           description: Loan updated successfully
@@ -1275,7 +1261,6 @@ paths:
                     example: Loan is already closed and cannot be updated
         '500':
           $ref: '#/components/responses/InternalServerError'
-
   /loans/{id}/return:
     post:
       summary: Return book
@@ -1317,7 +1302,6 @@ paths:
                     example: Loan is already closed
         '500':
           $ref: '#/components/responses/InternalServerError'
-
 components:
   securitySchemes:
     bearerAuth:
@@ -1325,7 +1309,6 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: JWT token obtained from /auth/login endpoint
-
   schemas:
     User:
       type: object
@@ -1343,22 +1326,24 @@ components:
           example: John Doe
         role:
           type: string
-          enum: [USER, LIBRARIAN, ADMIN]
+          enum:
+            - USER
+            - LIBRARIAN
+            - ADMIN
           example: USER
         createdAt:
           readOnly: true
           type: string
           format: date-time
-          example: 2025-01-15T10:30:00Z
+          example: '2025-01-15T10:30:00Z'
         updatedAt:
           readOnly: true
           type: string
           format: date-time
-          example: 2025-01-15T10:30:00Z
+          example: '2025-01-15T10:30:00Z'
       required:
         - email
         - fullName
-
     UserRegistration:
       type: object
       properties:
@@ -1377,7 +1362,6 @@ components:
         - email
         - password
         - fullName
-
     UserLogin:
       type: object
       properties:
@@ -1391,7 +1375,6 @@ components:
       required:
         - email
         - password
-
     AuthResponse:
       type: object
       properties:
@@ -1400,53 +1383,6 @@ components:
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         user:
           $ref: '#/components/schemas/User'
-
-    Author:
-      type: object
-      properties:
-        id:
-          readOnly: true
-          type: integer
-          example: 1
-        name:
-          type: string
-          example: J.K. Rowling
-        createdAt:
-          readOnly: true
-          type: string
-          format: date-time
-          example: 2025-01-15T10:30:00Z
-        updatedAt:
-          readOnly: true
-          type: string
-          format: date-time
-          example: 2025-01-15T10:30:00Z
-      required:
-        - name
-
-    Genre:
-      type: object
-      properties:
-        id:
-          readOnly: true
-          type: integer
-          example: 1
-        name:
-          type: string
-          example: Fantasy
-        createdAt:
-          readOnly: true
-          type: string
-          format: date-time
-          example: 2025-01-15T10:30:00Z
-        updatedAt:
-          readOnly: true
-          type: string
-          format: date-time
-          example: 2025-01-15T10:30:00Z
-      required:
-        - name
-
     Book:
       type: object
       properties:
@@ -1456,7 +1392,7 @@ components:
           example: 1
         isbn13:
           type: string
-          pattern: '^[0-9]{13}$'
+          pattern: ^[0-9]{13}$
           example: '9780439358071'
         title:
           type: string
@@ -1472,7 +1408,10 @@ components:
           example: 870
         status:
           type: string
-          enum: [AVAILABLE, RESERVED, LOANED]
+          enum:
+            - AVAILABLE
+            - RESERVED
+            - LOANED
           example: AVAILABLE
         authorId:
           type: integer
@@ -1488,12 +1427,12 @@ components:
           readOnly: true
           type: string
           format: date-time
-          example: 2025-01-15T10:30:00Z
+          example: '2025-01-15T10:30:00Z'
         updatedAt:
           readOnly: true
           type: string
           format: date-time
-          example: 2025-01-15T10:30:00Z
+          example: '2025-01-15T10:30:00Z'
       required:
         - isbn13
         - title
@@ -1501,13 +1440,12 @@ components:
         - pageCount
         - authorId
         - genreId
-
     BookCreate:
       type: object
       properties:
         isbn13:
           type: string
-          pattern: '^[0-9]{13}$'
+          pattern: ^[0-9]{13}$
           example: '9780439358071'
         title:
           type: string
@@ -1534,7 +1472,50 @@ components:
         - pageCount
         - authorId
         - genreId
-
+    Author:
+      type: object
+      properties:
+        id:
+          readOnly: true
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: J.K. Rowling
+        createdAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: '2025-01-15T10:30:00Z'
+        updatedAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: '2025-01-15T10:30:00Z'
+      required:
+        - name
+    Genre:
+      type: object
+      properties:
+        id:
+          readOnly: true
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Fantasy
+        createdAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: '2025-01-15T10:30:00Z'
+        updatedAt:
+          readOnly: true
+          type: string
+          format: date-time
+          example: '2025-01-15T10:30:00Z'
+      required:
+        - name
     Reservation:
       type: object
       properties:
@@ -1544,7 +1525,11 @@ components:
           example: 1
         status:
           type: string
-          enum: [ACTIVE, CANCELLED, EXPIRED, FULFILLED]
+          enum:
+            - ACTIVE
+            - CANCELLED
+            - EXPIRED
+            - FULFILLED
           example: ACTIVE
         userId:
           type: integer
@@ -1560,12 +1545,12 @@ components:
           readOnly: true
           type: string
           format: date-time
-          example: 2025-01-15T10:30:00Z
+          example: '2025-01-15T10:30:00Z'
         expiresAt:
           type: string
           format: date-time
           nullable: true
-          example: 2025-01-22T10:30:00Z
+          example: '2025-01-22T10:30:00Z'
         fulfilledAt:
           readOnly: true
           type: string
@@ -1578,7 +1563,6 @@ components:
           format: date-time
           nullable: true
           example: null
-
     ReservationCreate:
       type: object
       properties:
@@ -1587,7 +1571,6 @@ components:
           example: 1
       required:
         - bookId
-
     Loan:
       type: object
       properties:
@@ -1598,11 +1581,11 @@ components:
         startDate:
           type: string
           format: date-time
-          example: 2025-01-15T10:30:00Z
+          example: '2025-01-15T10:30:00Z'
         dueDate:
           type: string
           format: date-time
-          example: 2025-02-15T10:30:00Z
+          example: '2025-02-15T10:30:00Z'
         returnDate:
           readOnly: true
           type: string
@@ -1611,7 +1594,10 @@ components:
           example: null
         status:
           type: string
-          enum: [ACTIVE, OVERDUE, CLOSED]
+          enum:
+            - ACTIVE
+            - OVERDUE
+            - CLOSED
           example: ACTIVE
         userId:
           type: integer
@@ -1627,13 +1613,12 @@ components:
           readOnly: true
           type: string
           format: date-time
-          example: 2025-01-15T10:30:00Z
+          example: '2025-01-15T10:30:00Z'
         updatedAt:
           readOnly: true
           type: string
           format: date-time
-          example: 2025-01-15T10:30:00Z
-
+          example: '2025-01-15T10:30:00Z'
     LoanCreate:
       type: object
       properties:
@@ -1646,12 +1631,11 @@ components:
         dueDate:
           type: string
           format: date-time
-          example: 2025-02-15T10:30:00Z
+          example: '2025-02-15T10:30:00Z'
       required:
         - userId
         - bookId
         - dueDate
-
   responses:
     BadRequest:
       description: Bad Request - Invalid input data
@@ -1674,7 +1658,6 @@ components:
                     message:
                       type: string
                       example: Invalid email format
-
     Unauthorized:
       description: Unauthorized - Authentication required
       content:
@@ -1685,7 +1668,6 @@ components:
               error:
                 type: string
                 example: Authentication required
-
     Forbidden:
       description: Forbidden - Insufficient permissions
       content:
@@ -1696,7 +1678,6 @@ components:
               error:
                 type: string
                 example: Insufficient permissions
-
     NotFound:
       description: Not Found - Resource not found
       content:
@@ -1707,7 +1688,6 @@ components:
               error:
                 type: string
                 example: Resource not found
-
     Conflict:
       description: Conflict - Resource already exists or constraint violation
       content:
@@ -1718,7 +1698,6 @@ components:
               error:
                 type: string
                 example: Resource already exists
-
     InternalServerError:
       description: Internal Server Error
       content:
